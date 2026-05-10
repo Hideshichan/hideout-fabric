@@ -1,0 +1,126 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+plugins {
+	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+	id 'maven-publish'
+	id "org.jetbrains.kotlin.jvm" version "2.3.21"
+	//id "plugin.serialization" version "2.3.21"
+	//id "jvm" version "2.3.21"
+}
+
+version = project.mod_version
+group = project.maven_group
+
+repositories {
+	// Add repositories to retrieve artifacts from in here.
+	// You should only use this when depending on other mods because
+	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
+	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
+	// for more information about repositories.
+	maven {url = "https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1" }
+	maven{url = uri("https://maven.teamresourceful.com/repository/maven-public/")}
+	maven { url = 'https://repo.hypixel.net/repository/Hypixel/' }
+	maven {
+		name 'Xander Maven'
+		url 'https://maven.isxander.dev/releases'
+		// YACL
+	}
+}
+
+loom {
+	splitEnvironmentSourceSets()
+
+	mods {
+		"hideout" {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+		}
+	}
+
+}
+
+dependencies {
+	// To change the versions see the gradle.properties file
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings loom.officialMojangMappings()
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	//implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
+	// Fabric API. This is technically optional, but you probably want it anyway.
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
+
+	// DevAuth
+	modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.2")
+
+
+	// Skyblock API
+	api("tech.thatgravyboat:skyblock-api:4.1.10") {
+		capabilities { requireCapability("tech.thatgravyboat:skyblock-api-1.21.11") }
+	}
+	include("tech.thatgravyboat:skyblock-api:4.1.10") {
+		capabilities { requireCapability("tech.thatgravyboat:skyblock-api-1.21.11-remapped") }
+	}
+
+	// Hypixel mod api
+	modImplementation 'net.hypixel:mod-api:1.0.1'
+	include("net.hypixel:mod-api:1.0.1")
+
+	// YACL
+	modImplementation "dev.isxander:yet-another-config-lib:${project.yacl_version}"
+}
+
+processResources {
+	def version = project.version
+	inputs.property "version", version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 21
+}
+
+kotlin {
+	compilerOptions {
+		jvmTarget = JvmTarget.JVM_21
+	}
+}
+
+java {
+	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+	// if it is present.
+	// If you remove this line, sources will not be generated.
+	withSourcesJar()
+
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
+}
+
+jar {
+	def projectName = project.name
+	inputs.property "projectName", projectName
+
+	from("LICENSE") {
+		rename { "${it}_$projectName"}
+	}
+}
+
+// configure the maven publication
+publishing {
+	publications {
+		create("mavenJava", MavenPublication) {
+			from components.java
+		}
+	}
+
+	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+	repositories {
+		// Add repositories to publish to here.
+		// Notice: This block does NOT have the same function as the block in the top level.
+		// The repositories here will be used for publishing your artifact, not for
+		// retrieving dependencies.
+	}
+}
