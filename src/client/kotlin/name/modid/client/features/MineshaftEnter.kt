@@ -1,7 +1,6 @@
 package name.modid.client.features
 
 import name.modid.client.config.ConfigManager
-import name.modid.client.config.ModConfig
 import name.modid.client.utils.GeneralUtils
 import net.minecraft.network.chat.Component
 import tech.thatgravyboat.skyblockapi.api.area.mining.mineshaft.CorpseType
@@ -25,7 +24,6 @@ object MineshaftEnter {
 
         // Type title
         McClient.setTitle(Component.literal(type.toString()), Component.literal(""), 0.25f, 1f, 0.25f)
-
         // Announce shaft
         if (ConfigManager.config.announceOnShaftEnter && !ConfigManager.config.onlyVanguardLittle) {
             if (type != MineshaftType.VANGUARD && type != MineshaftType.LITTLE) {
@@ -60,6 +58,9 @@ object MineshaftEnter {
         }
         if (ConfigManager.config.announceCorpses) McClient.sendCommand("/pc $totalLapis Lapis, $totalUmber Umber, $totalTungsten Tungsten")
 
+        // TODO: replace subtitle with a check for if you should mine, based on user config
+        if (ConfigManager.config.displayLapis) McClient.setTitle(Component.literal("${GeneralUtils.BLUE}${totalLapis}L"), Component.literal(if (totalLapis == 4) "Mine this" else ""), 0.25f, 1f, 0.25f)
+
 
         // if config = 0, means disabled
         val lapisCheck = (totalLapis >= ConfigManager.config.minLapis && ConfigManager.config.minLapis > 0)
@@ -82,10 +83,12 @@ object MineshaftEnter {
 
 
             GeneralUtils.delay(15000L) {
-                if (waitingForPlayers && PartyAPI.inParty && playersJoined > 0 && warped == false) {
-                    McClient.sendCommand("/p warp")
+                if (waitingForPlayers && PartyAPI.inParty && !warped) {
+                    if (playersJoined > 0) {
+                        McClient.sendCommand("/p warp")
+                        warped = true
+                    }
                     waitingForPlayers = false
-                    warped = true
                     GeneralUtils.delay(1000L) {
                         McClient.sendCommand("/p disband")
                     }
@@ -114,9 +117,9 @@ object MineshaftEnter {
         if (everyoneJoined) {
 
             waitingForPlayers = false
-            warped = true
 
             McClient.sendCommand("/p warp")
+            warped = true
 
             GeneralUtils.delay(1000L) {
                 McClient.sendCommand("/p disband")

@@ -3,6 +3,7 @@ package name.modid.client.config
 import dev.isxander.yacl3.api.ConfigCategory
 import dev.isxander.yacl3.api.Option
 import dev.isxander.yacl3.api.OptionDescription
+import dev.isxander.yacl3.api.OptionGroup
 import dev.isxander.yacl3.api.YetAnotherConfigLib
 import dev.isxander.yacl3.api.controller.BooleanControllerBuilder
 import dev.isxander.yacl3.api.controller.IntegerFieldControllerBuilder
@@ -103,6 +104,18 @@ object ConfigScreen {
             )
             .controller(BooleanControllerBuilder::create)
             .build()
+
+        val displayLapisOption = Option.createBuilder<Boolean>()
+            .name(Component.literal("Display Lapis"))
+            .binding(
+                true,
+                { ConfigManager.config.displayLapis },
+                { ConfigManager.config.displayLapis = it }
+            )
+            .controller(BooleanControllerBuilder::create)
+            .build()
+
+        // TODO: config for each shaft on min lapis to mine
 
         val playersToWarpOption = Option.createBuilder<String>()
             .name(Component.literal("List of players to warp"))
@@ -211,25 +224,47 @@ object ConfigScreen {
         val shaftsCategory = ConfigCategory.createBuilder()
             .name(Component.literal("Shafts"))
 
-            .option(announceShaftSpawnOption)
-            .option(titleOnShaftSpawnOption)
-            .option(transferOnShaftSpawnOption)
-            .option(announceOnShaftEnterOption)
-            .option(onlyVanguardLittleOption)
+            .group(OptionGroup.createBuilder()
+                .name(Component.literal("Spawning"))
+                .option(announceShaftSpawnOption)
+                .option(titleOnShaftSpawnOption)
+                .option(transferOnShaftSpawnOption)
+
+                .build()
+            )
+
+            .group(OptionGroup.createBuilder()
+                .name(Component.literal("Entered"))
+                .option(announceOnShaftEnterOption)
+                .option(onlyVanguardLittleOption)
+
+                .build())
 
             .build()
 
         val corpsesCategory = ConfigCategory.createBuilder()
             .name(Component.literal("Corpses"))
 
-            .option(announceCorpsesOption)
-            .option(corpseAutoWarpOption)
-            .option(playersToWarpOption)
-            .option(minLapisOption)
-            .option(minUmberOption)
-            .option(minTungstenOption)
+            .group(OptionGroup.createBuilder()
+                .name(Component.literal("General"))
+                .option(announceCorpsesOption)
+                .option(displayLapisOption)
+                .build()
+            )
 
-            .build()
+           .group(OptionGroup.createBuilder()
+                .name(Component.literal("Auto warp"))
+                .description(OptionDescription.of(Component.literal("Config setting relating to auto warp")))
+                .option(corpseAutoWarpOption)
+                .option(playersToWarpOption)
+                .option(minLapisOption)
+                .option(minUmberOption)
+                .option(minTungstenOption)
+
+                .build()
+           )
+
+           .build()
 
         // =========================
         // Build Screen

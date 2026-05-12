@@ -10,7 +10,12 @@ data class ModConfig(
     var announceOnShaftEnter: Boolean = true,
     var onlyVanguardLittle: Boolean = false,
 
+    var alwaysMine: MutableList<String> = mutableListOf(),
+    var mineAt3Lapis: MutableList<String> = mutableListOf(),
+    var mineat4Lapis: MutableList<String> = mutableListOf(),
+
     var announceCorpses: Boolean = true,
+    var displayLapis: Boolean = true,
     var corpseAutoWarp: Boolean = false,
     var playersToWarp: MutableList<String> = mutableListOf(),
     var minLapis: Int = 0,
