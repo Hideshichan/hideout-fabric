@@ -25,7 +25,6 @@ object CommandUtils {
                         )
                     }
 
-                    println("opened config")
 
                 } catch (e: Exception) {
 
@@ -35,5 +34,15 @@ object CommandUtils {
                 1
             })
         }
+        /*
+        ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
+
+            dispatcher.register(literal("testrandom").executes { ctx ->
+
+                GeneralUtils.debugChat("players: ${LocationAPI.playerCount}")
+                1
+
+            })
+        }*/
     }
 }

@@ -1,6 +1,7 @@
 package name.modid.client.utils
 
 import net.minecraft.client.Minecraft
+import net.minecraft.network.chat.Component
 import java.util.Timer
 import kotlin.concurrent.schedule
 
@@ -38,5 +39,13 @@ object GeneralUtils {
                 task()
             }
         }
+    }
+
+
+    fun debugChat(message: String) {
+        Minecraft.getInstance().player?.displayClientMessage(
+            Component.literal("[DEBUG] $message"),
+            false
+        )
     }
 }

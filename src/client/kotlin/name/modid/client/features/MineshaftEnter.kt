@@ -11,9 +11,23 @@ import tech.thatgravyboat.skyblockapi.api.events.location.mineshaft.CorpseSpawnE
 import tech.thatgravyboat.skyblockapi.api.events.location.mineshaft.MineshaftEnteredEvent
 import tech.thatgravyboat.skyblockapi.helpers.McClient
 import tech.thatgravyboat.skyblockapi.api.profile.party.PartyAPI
+import tech.thatgravyboat.skyblockapi.api.location.LocationAPI
 
 
 object MineshaftEnter {
+
+    private fun warpAndDisband() {
+        if (warped) return
+
+        warped = true
+        waitingForPlayers = false
+
+        McClient.sendCommand("/p warp")
+
+        GeneralUtils.delay(1000L) {
+            McClient.sendCommand("/p disband")
+        }
+    }
 
     @Subscription
     fun onEnterMineshaft(event: MineshaftEnteredEvent) {
@@ -21,6 +35,12 @@ object MineshaftEnter {
         val variant = event.variant
 
         //println("shaft: $type")
+
+        // MAYHEM! Your Suspicious Scrap chance was buffed by your Mineshaft Mayhem perk!
+        // MAYHEM! Your Pickaxe Ability cooldown was reduced from your Mineshaft Mayhem perk!
+        // MAYHEM! You received a ☘ Mining Fortune buff from your Mineshaft Mayhem perk!
+        // MAYHEM! You received a ⸕ Mining Speed buff from your Mineshaft Mayhem perk!
+        // MAYHEM! You received a ❄ Cold Resistance buff from your Mineshaft Mayhem perk!
 
         // Type title
         McClient.setTitle(Component.literal(type.toString()), Component.literal(""), 0.25f, 1f, 0.25f)
@@ -44,19 +64,15 @@ object MineshaftEnter {
 
     @Subscription
     fun onCorpseLoad(event: CorpseSpawnEvent) {
-        var totalLapis = 0
-        var totalUmber = 0
-        var totalTungsten  = 0
         val corpses = event.corpses
+        val totalLapis = corpses.count { it.type == CorpseType.LAPIS }
+        val totalUmber = corpses.count { it.type == CorpseType.UMBER }
+        val totalTungsten = corpses.count { it.type == CorpseType.TUNGSTEN }
+        val isMineshaftOwner = LocationAPI.playerCount == 1
         //println("corpses: $corpses")
         // corpses: [Corpse(type=Umber, looted=false), Corpse(type=Tungsten, looted=false)]
 
-        for (corpse in corpses) {
-            if (corpse.type == CorpseType.LAPIS) totalLapis++
-            if (corpse.type == CorpseType.UMBER) totalUmber++
-            if (corpse.type == CorpseType.TUNGSTEN) totalTungsten++
-        }
-        if (ConfigManager.config.announceCorpses) McClient.sendCommand("/pc $totalLapis Lapis, $totalUmber Umber, $totalTungsten Tungsten")
+        if (ConfigManager.config.announceCorpses && PartyAPI.inParty) McClient.sendCommand("/pc $totalLapis Lapis, $totalUmber Umber, $totalTungsten Tungsten")
 
         // TODO: replace subtitle with a check for if you should mine, based on user config
         if (ConfigManager.config.displayLapis) McClient.setTitle(Component.literal("${GeneralUtils.BLUE}${totalLapis}L"), Component.literal(if (totalLapis == 4) "Mine this" else ""), 0.25f, 1f, 0.25f)
@@ -70,9 +86,12 @@ object MineshaftEnter {
         // want to warp for ANY req met
         if (ConfigManager.config.corpseAutoWarp && (lapisCheck || umberCheck || tungstenCheck)) {
 
+            if (!isMineshaftOwner) return
+
             val playersToWarp = ConfigManager.config.playersToWarp
             waitingForPlayers = true
             warped = false
+            playersJoined = 0
 
             if (ConfigManager.config.announceCorpses) {
                 GeneralUtils.delay(1000) {McClient.sendCommand("/p ${playersToWarp.joinToString(separator = " ")}")}
@@ -82,15 +101,21 @@ object MineshaftEnter {
             }
 
 
-            GeneralUtils.delay(15000L) {
-                if (waitingForPlayers && PartyAPI.inParty && !warped) {
-                    if (playersJoined > 0) {
-                        McClient.sendCommand("/p warp")
-                        warped = true
-                    }
-                    waitingForPlayers = false
-                    GeneralUtils.delay(1000L) {
-                        McClient.sendCommand("/p disband")
+            GeneralUtils.delay(12000L) {
+                if (warped) return@delay
+                McClient.sendCommand("/pc Warping in 3 seconds.")
+                GeneralUtils.delay(3000L) {
+
+                    if (ConfigManager.config.debugChatLogging) GeneralUtils.debugChat("waitingForPlayers: $waitingForPlayers, warped: $warped, playersJoined: $playersJoined, inParty: ${PartyAPI.inParty}")
+
+                    if (waitingForPlayers && PartyAPI.inParty && !warped) {
+                        if (playersJoined > 0) {
+                            warpAndDisband()
+                        }
+                        else {
+                            waitingForPlayers = false
+                            McClient.sendCommand("/p disband")
+                        }
                     }
                 }
             }
@@ -115,15 +140,7 @@ object MineshaftEnter {
             requiredPlayers.all { it in currentMembers }
 
         if (everyoneJoined) {
-
-            waitingForPlayers = false
-
-            McClient.sendCommand("/p warp")
-            warped = true
-
-            GeneralUtils.delay(1000L) {
-                McClient.sendCommand("/p disband")
-            }
+            warpAndDisband()
         }
     }
 }
