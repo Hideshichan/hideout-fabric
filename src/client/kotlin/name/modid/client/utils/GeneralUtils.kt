@@ -44,7 +44,7 @@ object GeneralUtils {
 
     fun debugChat(message: String) {
         Minecraft.getInstance().player?.displayClientMessage(
-            Component.literal("[DEBUG] $message"),
+            Component.literal("${AQUA}[HO DEBUG]$RESET $message"),
             false
         )
     }
