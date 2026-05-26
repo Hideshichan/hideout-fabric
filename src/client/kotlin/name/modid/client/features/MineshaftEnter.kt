@@ -102,11 +102,11 @@ object MineshaftEnter {
 
 
             GeneralUtils.delay(12000L) {
+                if (ConfigManager.config.debugChatLogging) GeneralUtils.debugChat("waitingForPlayers: $waitingForPlayers, warped: $warped, playersJoined: $playersJoined, inParty: ${PartyAPI.inParty}")
                 if (warped) return@delay
                 McClient.sendCommand("/pc Warping in 3 seconds.")
                 GeneralUtils.delay(3000L) {
 
-                    if (ConfigManager.config.debugChatLogging) GeneralUtils.debugChat("waitingForPlayers: $waitingForPlayers, warped: $warped, playersJoined: $playersJoined, inParty: ${PartyAPI.inParty}")
 
                     if (waitingForPlayers && PartyAPI.inParty && !warped) {
                         if (playersJoined > 0) {
