@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component
 object MineshaftSpawn {
     @Subscription
     fun onMineshaftSpawn(event: MineshaftFoundEvent) {
+        if (ConfigManager.config.debugChatLogging) GeneralUtils.debugChat("Detected mineshaft spawn.")
         if (ConfigManager.config.announceShaftSpawn) McClient.sendCommand("/pc Mineshaft Spawned!")
         if (ConfigManager.config.transferOnShaftSpawn) GeneralUtils.delay(500) { McClient.sendCommand("/pc !pt") }
         if (ConfigManager.config.titleOnShaftSpawn) {McClient.setTitle(Component.literal("Mineshaft Spawned!"), Component.literal(""), 0.25f, 1f, 0.25f)}
