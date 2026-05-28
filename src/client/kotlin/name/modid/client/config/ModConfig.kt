@@ -20,5 +20,10 @@ data class ModConfig(
     var playersToWarp: MutableList<String> = mutableListOf(),
     var minLapis: Int = 0,
     var minUmber: Int = 0,
-    var minTungsten: Int = 0
+    var minTungsten: Int = 0,
+
+    var vanguardToggle: Boolean = false,
+    var onlyVanguard: Boolean = false,
+    var useSamePlayerList: Boolean = true,
+    var vanguardPlayerList: MutableList<String> = mutableListOf(),
 )

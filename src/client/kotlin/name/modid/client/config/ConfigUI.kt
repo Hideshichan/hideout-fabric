@@ -121,7 +121,7 @@ object ConfigScreen {
             .name(Component.literal("List of players to warp"))
             .description(
                 OptionDescription.of(
-                    Component.literal("Comma separated list of usernames")
+                    Component.literal("Comma separated list of usernames. (<player1>, <player2>)")
                 )
             )
             .binding(
@@ -189,6 +189,59 @@ object ConfigScreen {
             .controller(IntegerFieldControllerBuilder::create)
             .build()
 
+        val useSamePlayerListOption = Option.createBuilder<Boolean>()
+            .name(Component.literal("Use same list of usernames as normal corpses"))
+            .description { OptionDescription.of(Component.literal("Use same list of usernames for vanguards and normal corpses")) }
+            .binding(
+                false,
+                { ConfigManager.config.useSamePlayerList },
+                { ConfigManager.config.useSamePlayerList = it }
+            )
+            .available(ConfigManager.config.vanguardToggle && ConfigManager.config.corpseAutoWarp)
+            .controller(BooleanControllerBuilder::create)
+            .build()
+
+        val vanguardPlayerList = Option.createBuilder<String>()
+            .name(Component.literal("List of players to warp"))
+            .description(
+                OptionDescription.of(
+                    Component.literal("Comma separated list of usernames. (<player1>, <player2>)")
+                )
+            )
+            .binding(
+                "",
+                {
+                    ConfigManager.config.vanguardPlayerList.joinToString(", ")
+                },
+                {
+                    ConfigManager.config.vanguardPlayerList =
+                        it.split(",")
+                            .map(String::trim)
+                            .filter(String::isNotEmpty)
+                            .toMutableList()
+                }
+            )
+            .available(ConfigManager.config.vanguardToggle && ConfigManager.config.corpseAutoWarp)
+            .controller(StringControllerBuilder::create)
+            .build()
+
+        val vanguardMainOption = Option.createBuilder<Boolean>()
+            .name(Component.literal("Main vanguard toggle"))
+            .description { OptionDescription.of(Component.literal("Main vanguard toggle. Disabled = never warp on vanguard.")) }
+            .binding(
+                false,
+                { ConfigManager.config.vanguardToggle },
+                { ConfigManager.config.vanguardToggle = it }
+            )
+            .listener { _, value ->
+                vanguardPlayerList.setAvailable(value)
+                useSamePlayerListOption.setAvailable(value)
+            }
+            .available(ConfigManager.config.corpseAutoWarp)
+            .controller(BooleanControllerBuilder::create)
+            .build()
+
+
         val corpseAutoWarpOption = Option.createBuilder<Boolean>()
             .name(Component.literal("Corpse auto warp"))
             .description(
@@ -207,6 +260,11 @@ object ConfigScreen {
                 minLapisOption.setAvailable(value)
                 minUmberOption.setAvailable(value)
                 minTungstenOption.setAvailable(value)
+                vanguardMainOption.setAvailable(value)
+                if (value == false) {
+                    vanguardPlayerList.setAvailable(value)
+                    useSamePlayerListOption.setAvailable(value)
+                }
 
             }
             .controller(BooleanControllerBuilder::create)
@@ -263,6 +321,15 @@ object ConfigScreen {
 
                 .build()
            )
+            .group(OptionGroup.createBuilder()
+                .name(Component.literal("Vanguards"))
+                .description(OptionDescription.of(Component.literal("Options relating to vanguards")))
+                .option(vanguardMainOption)
+                .option(vanguardPlayerList)
+                .option(useSamePlayerListOption)
+
+                .build()
+            )
 
            .build()
 
