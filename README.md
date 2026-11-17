@@ -1,9 +1,16 @@
-# hideout
+# Hideout
 
-## Setup
+A Fabric mod for Hypixel SkyBlock. It started as a JavaScript ChatTriggers plugin on 1.8.9, and I rewrote it for modern Minecraft when Hypixel moved versions and ChatTriggers stopped working.
 
-For setup instructions, please see the [Fabric Documentation page](https://docs.fabricmc.net/develop/getting-started/creating-a-project#setting-up) related to the IDE that you are using.
+I made it for myself, mostly to add mining features other mods didn't have, and to learn Kotlin along the way.
 
-## License
+## Basic feature list
+- Mineshaft party chat announcement + transfer
+- Corpse ESP
+- Corpse auto warp (configurable with a list of players to warp)
+- A /bestsell command, to help you decide how to sell gemstones between fines or flawlesses
 
-This template is available under the CC0 license. Feel free to learn from it and incorporate it in your own projects.
+
+# TODO (may never be done)
+- Add in a subtitle saying if this mineshaft should be mined or not depending on user config
+- Show Mineshaft Mayhem buff in a title or gui display
